@@ -8,24 +8,59 @@ namespace Dispatcher
 {
     public class MessageBus
     {
-        private Dictionary<Type, object> commandHandlers = new Dictionary<Type, object>();
-        public Dictionary<Type, object> CommandHandlers { get { return commandHandlers; } }
+        private Dictionary<Type, Action<ICommand>> _commandHandlers = new Dictionary<Type, Action<ICommand>>();
+        //public Dictionary<Type, Action<ICommand>> CommandHandlers { get { return _commandHandlers; } }
 
-        public void RegisterCommandHandler<TCommand>(Action<TCommand> cmd) where TCommand : ICommand
+        private Dictionary<Type, List<Action<IEvent>>> _eventSubscribers = new Dictionary<Type, List<Action<IEvent>>>();
+        //public Dictionary<Type, List<Action<IEvent>>> EventSubscribers { get { return _eventSubscribers; } }
+
+        public void RegisterCommandHandler<TCommand>(IHandleCommands<TCommand> handler) where TCommand : ICommand
         {
-            if (commandHandlers.Count > 0 && commandHandlers.ContainsKey(typeof(TCommand)))
+            if (_commandHandlers.Count > 0 && _commandHandlers.ContainsKey(typeof(TCommand)))
             {
                 throw new DuplicateCommandHandlerException();
             }
-            commandHandlers.Add(typeof(TCommand), cmd);
+
+            _commandHandlers.Add(typeof(TCommand), c =>
+            {
+                var evts = handler.Handle((TCommand)c);
+                if (evts != null)
+                {
+                    foreach (var e in evts)
+                    {
+                        Publish((IEvent)e);
+                    }
+                }
+            });
         }
 
-        public void Send<TCommand>(TCommand command)
+        public void RegisterEventSubscriber<TEvent>(ISubscribeToEvents<TEvent> subscriber)
         {
-            if (commandHandlers.ContainsKey(typeof(TCommand)))
-                (commandHandlers[typeof(TCommand)] as Action<TCommand>).Invoke(command);
+            if (!_eventSubscribers.ContainsKey(typeof(TEvent)))
+            {
+                _eventSubscribers.Add(typeof(TEvent), new List<Action<IEvent>>());
+            }
+            _eventSubscribers[typeof(TEvent)].Add(e => subscriber.Handle((TEvent)e));
+        }
+
+        public void Send<TCommand>(TCommand command) where TCommand: ICommand
+        {
+            if (_commandHandlers.ContainsKey(typeof(TCommand)))
+                _commandHandlers[typeof(TCommand)](command);
             else
                 throw new UnknownCommandException("No command handler registered for " + typeof(TCommand).Name);
+        }
+
+        public void Publish<TEvent>(TEvent evt) where TEvent : IEvent
+        {
+            var eventType = evt.GetType();
+            if (_eventSubscribers.ContainsKey(eventType))
+            {
+                foreach (var subscriber in _eventSubscribers[eventType])
+                {
+                    subscriber(evt);
+                }
+            }
         }
     }
 }

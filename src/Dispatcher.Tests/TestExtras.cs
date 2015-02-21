@@ -6,37 +6,23 @@ using System.Threading.Tasks;
 
 namespace Dispatcher.Tests
 {
-    public class TestCommand : ICommand
+    public class TestEvent1 : IEvent
     {
-        private string _output;
-        public Guid Identifier
-        {
-            get { throw new NotImplementedException(); }
-        }
-
-        public string Output
-        {
-            get { return _output; }
-            set { _output = value; }
-        }
+        public Guid Identifier { get; set; }
     }
 
-    public class TestCommandHandler : IHandleCommands<TestCommand>
+    public class TestEvent2 : IEvent
     {
-        private IOutputTestCommandData _outputter;
-        public TestCommandHandler(IOutputTestCommandData outpuuter)
-        {
-            _outputter = outpuuter;
-        }
-
-        public void Handle(TestCommand command)
-        {
-            _outputter.Output(command.Output);
-        }
+        public Guid Identifier { get; set; }
     }
 
-    public interface IOutputTestCommandData
+    public class UnknownCommand : ICommand
     {
-        string Output(string output);
+        public Guid Identifier { get; set; }
+    }
+
+    public class TestCommand1 : ICommand
+    {
+        public Guid Identifier { get; set; }
     }
 }
