@@ -35,6 +35,16 @@ namespace TestRunner
             var agg = new ApplicationPingAggregate();
             _bus.RegisterCommandHandler<LogApplicationPing>(agg);
             _bus.RegisterEventSubscriber<ApplicationPinged>(agg);
+            _bus.RegisterEventSubscriber<ApplicationPinged>(new RandomEventSubscriber());
+        }
+    }
+
+    public class RandomEventSubscriber : ISubscribeToEvents<ApplicationPinged>
+    {
+
+        public void Handle(ApplicationPinged @event)
+        {
+            Console.WriteLine("RandomEventSubscriber for {0}", @event.ApplicationName);
         }
     }
 

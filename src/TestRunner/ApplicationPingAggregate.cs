@@ -1,6 +1,6 @@
 ﻿using Dispatcher;
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,7 +16,7 @@ namespace TestRunner
             
         }
 
-        public IEnumerable Handle(LogApplicationPing command)
+        public IEnumerable<IEvent> Handle(LogApplicationPing command)
         {
             Console.WriteLine(">>CMD: Application '{0}' pinged successfully at '{1}'", command.ApplicationName, command.OccurredAt);
 

@@ -9,10 +9,7 @@ namespace Dispatcher
     public class MessageBus
     {
         private Dictionary<Type, Action<ICommand>> _commandHandlers = new Dictionary<Type, Action<ICommand>>();
-        //public Dictionary<Type, Action<ICommand>> CommandHandlers { get { return _commandHandlers; } }
-
         private Dictionary<Type, List<Action<IEvent>>> _eventSubscribers = new Dictionary<Type, List<Action<IEvent>>>();
-        //public Dictionary<Type, List<Action<IEvent>>> EventSubscribers { get { return _eventSubscribers; } }
 
         public void RegisterCommandHandler<TCommand>(IHandleCommands<TCommand> handler) where TCommand : ICommand
         {
@@ -34,7 +31,7 @@ namespace Dispatcher
             });
         }
 
-        public void RegisterEventSubscriber<TEvent>(ISubscribeToEvents<TEvent> subscriber)
+        public void RegisterEventSubscriber<TEvent>(ISubscribeToEvents<TEvent> subscriber) where TEvent : IEvent
         {
             if (!_eventSubscribers.ContainsKey(typeof(TEvent)))
             {
@@ -43,7 +40,7 @@ namespace Dispatcher
             _eventSubscribers[typeof(TEvent)].Add(e => subscriber.Handle((TEvent)e));
         }
 
-        public void Send<TCommand>(TCommand command) where TCommand: ICommand
+        public void Send<TCommand>(TCommand command) where TCommand : ICommand
         {
             if (_commandHandlers.ContainsKey(typeof(TCommand)))
                 _commandHandlers[typeof(TCommand)](command);
