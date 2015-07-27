@@ -20,12 +20,7 @@ namespace TestRunner
         {
             Console.WriteLine(">>CMD: Application '{0}' pinged successfully at '{1}'", command.ApplicationName, command.OccurredAt);
 
-            yield return (new ApplicationPinged
-            {
-                Identifier = Guid.NewGuid(),
-                ApplicationName = "Test Application 1",
-                OccurredAt = DateTime.UtcNow
-            });
+            yield return (new ApplicationPinged(Guid.NewGuid(), "Test Application 1", DateTime.UtcNow));
         }
 
         public void Handle(ApplicationPinged @event)
